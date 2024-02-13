@@ -17,3 +17,10 @@ export const getUserByEmail = async (email: string) => {
         return null;
     }
 };
+export const getUserLists = async () => {
+    try {
+        return await db.users.findMany();
+    } catch {
+        return [];
+    }
+};

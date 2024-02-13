@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { getUserByEmail } from "@/data/user.data";
 import { SignInSchema, SignUpSchema } from "@/schemas/auth.schema";
 import { db } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 
 
 export const SignInAction = async (
@@ -12,7 +13,7 @@ export const SignInAction = async (
 ) => {
     try {
         const validatedFields = SignInSchema.safeParse(values);
-        
+
         if (!validatedFields.success) throw new Error("Invalid fields!")
 
         const { email, password } = validatedFields.data;
@@ -27,6 +28,7 @@ export const SignInAction = async (
         );
         if (!passwordsMatch) throw new Error("Password is invalid!")
 
+        revalidatePath('/')
         return { message: "success" }
     } catch (error: any) {
         //console.log(error)
@@ -57,6 +59,7 @@ export const SignUpAction = async (
             },
         });
 
+        revalidatePath('/')
         return { message: "success" }
     } catch (error: any) {
         //console.log(error)
