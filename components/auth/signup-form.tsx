@@ -15,20 +15,13 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
+import { SignUpSchema } from "@/schemas/auth.schema";
+import { useTransition } from "react";
+import { SignUpAction } from "@/actions/auth.action";
 
-const SignUpSchema = z.object({
-    name: z
-        .string()
-        .min(5, { message: "Name must be at least 5 characters." }),
-    email: z
-        .string()
-        .email("This is not a valid email."),
-    password: z
-        .string()
-        .min(6, { message: "Password must be at least 6 characters." }),
-})
+export const SignUpForm = () => {
 
-const SignUpForm = () => {
+    const [isPending, startTransition] = useTransition();
 
     const form = useForm<z.infer<typeof SignUpSchema>>({
         resolver: zodResolver(SignUpSchema),
@@ -39,13 +32,24 @@ const SignUpForm = () => {
         },
     })
     const onSubmit = (values: z.infer<typeof SignUpSchema>) => {
-        toast({
-            title: "You submitted the following values:",
-            description: (
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-                </pre>
-            ),
+        startTransition(() => {
+            SignUpAction(values)
+                .then((data) => {
+                    toast({
+                        title: "You submitted the following values:",
+                        description: (
+                            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+                                <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+                            </pre>
+                        ),
+                    })
+                })
+                .catch(() => {
+                    toast({
+                        description: "Something went wrong",
+                    })
+                })
+
         })
     }
 
@@ -101,5 +105,3 @@ const SignUpForm = () => {
         </>
     )
 }
-
-export { SignUpSchema, SignUpForm }

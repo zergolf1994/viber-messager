@@ -1,4 +1,6 @@
 "use client";
+
+import { useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -15,17 +17,12 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
+import { SignInAction } from "@/actions/auth.action";
+import { SignInSchema } from "@/schemas/auth.schema";
 
-const SignInSchema = z.object({
-    email: z
-        .string()
-        .email("This is not a valid email."),
-    password: z
-        .string()
-        .min(6, { message: "Password must be at least 6 characters." }),
-})
+export const SignInForm = () => {
 
-const SignInForm = () => {
+    const [isPending, startTransition] = useTransition();
 
     const form = useForm<z.infer<typeof SignInSchema>>({
         resolver: zodResolver(SignInSchema),
@@ -35,13 +32,24 @@ const SignInForm = () => {
         },
     })
     const onSubmit = (values: z.infer<typeof SignInSchema>) => {
-        toast({
-            title: "You submitted the following values:",
-            description: (
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-                </pre>
-            ),
+        startTransition(() => {
+            SignInAction(values)
+                .then((data) => {
+                    toast({
+                        title: "You submitted the following values:",
+                        description: (
+                            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+                                <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+                            </pre>
+                        ),
+                    })
+                })
+                .catch(() => {
+                    toast({
+                        description: "Something went wrong",
+                    })
+                })
+
         })
     }
 
@@ -52,6 +60,7 @@ const SignInForm = () => {
                     <FormField
                         control={form.control}
                         name="email"
+                        disabled={isPending}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
@@ -65,6 +74,7 @@ const SignInForm = () => {
                     <FormField
                         control={form.control}
                         name="password"
+                        disabled={isPending}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Password</FormLabel>
@@ -75,11 +85,12 @@ const SignInForm = () => {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit">Submit</Button>
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                    >Submit</Button>
                 </form>
             </Form>
         </>
     )
 }
-
-export { SignInSchema, SignInForm }
