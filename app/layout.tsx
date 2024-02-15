@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster"
 import { auth } from "@/lib/auth";
 import { SessionProvider } from "next-auth/react";
+import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -30,7 +31,9 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <Providers>
+              {children}
+            </Providers>
             <Toaster />
           </ThemeProvider>
         </body>

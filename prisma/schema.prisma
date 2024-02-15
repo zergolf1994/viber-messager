@@ -37,3 +37,59 @@ model auths {
 
     createdAt DateTime @default(now())
 }
+
+enum ChatType {
+    viber
+    group
+}
+
+model chats {
+    id      String   @id @default(uuid()) @map("_id")
+    enable  Boolean  @default(true)
+    type    ChatType @default(viber)
+    token   String?
+    image   String?
+    name    String?
+    uri     String?
+    webhook String?
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime?
+
+    members members[] @relation(name: "ChatMembers")
+}
+
+model members {
+    id         String  @id @default(uuid()) @map("_id")
+    chatId     String
+    name       String
+    image      String?
+    user_token String  @unique
+    subscribed Boolean @default(true)
+    username   String?
+
+    createdAt DateTime  @default(now())
+    lastAt    DateTime?
+
+    chat chats @relation(name: "ChatMembers", fields: [chatId], references: [id])
+}
+
+enum SendType {
+    member
+    user
+}
+
+model messages {
+    id            String    @id @default(uuid()) @map("_id")
+    chatId        String
+    memberId      String
+    userId        String?
+    sent_by       SendType  @default(member)
+    type          String    @default("text")
+    text          String?
+    mediaId       String?
+
+    message_token BigInt?
+    createdAt     DateTime  @default(now())
+    seenAt        DateTime?
+}
