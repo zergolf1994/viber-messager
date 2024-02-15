@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
 import { SignInAction } from "@/actions/auth.action";
 import { SignInSchema } from "@/schemas/auth.schema";
+import { signIn } from "next-auth/react";
 
 export const SignInForm = () => {
 
@@ -34,17 +35,22 @@ export const SignInForm = () => {
     const onSubmit = (values: z.infer<typeof SignInSchema>) => {
         startTransition(() => {
             SignInAction(values)
-                .then((data) => {
-                    toast({
-                        title: "You submitted the following values:",
-                        description: (
-                            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                                <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-                            </pre>
-                        ),
-                    })
+                .then(async (data) => {
+                    if (!data.id) {
+                        toast({
+                            title: "You submitted the following values:",
+                            description: (
+                                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+                                    <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+                                </pre>
+                            ),
+                        })
+                    } else {
+                        await signIn("credentials", { id: data?.id, redirectTo: "/" })
+                    }
                 })
-                .catch(() => {
+                .catch((err) => {
+                    console.log(err)
                     toast({
                         description: "Something went wrong",
                     })

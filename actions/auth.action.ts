@@ -6,6 +6,7 @@ import { getUserByEmail } from "@/data/user.data";
 import { SignInSchema, SignUpSchema } from "@/schemas/auth.schema";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { createAuthId } from "@/data/auth.data";
 
 
 export const SignInAction = async (
@@ -27,11 +28,13 @@ export const SignInAction = async (
             existingUser.password,
         );
         if (!passwordsMatch) throw new Error("Password is invalid!")
-
+        //สร้าง auth สำหรับ user
+        const data = await createAuthId(existingUser.id)
+        if (!data) throw new Error("Something went wrong.")
         revalidatePath('/')
-        return { message: "success" }
+        return { message: "success", id: data?.id }
     } catch (error: any) {
-        //console.log(error)
+        console.log(error)
         return { error: true, message: error?.message }
     }
 }

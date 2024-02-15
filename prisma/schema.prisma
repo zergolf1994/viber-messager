@@ -1,7 +1,7 @@
 // prisma/schema.prisma
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -24,4 +24,16 @@ model users {
 
     createdAt DateTime  @default(now())
     updatedAt DateTime?
+
+    auths auths[] @relation(name: "UserAuths")
+}
+
+model auths {
+    id     String  @id @default(uuid()) @map("_id")
+    enable Boolean @default(true)
+    userId String
+
+    user users @relation(name: "UserAuths", fields: [userId], references: [id])
+
+    createdAt DateTime @default(now())
 }
